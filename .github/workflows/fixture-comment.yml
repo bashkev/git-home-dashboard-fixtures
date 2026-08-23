@@ -1,0 +1,17 @@
+name: Fixture comment
+on:
+  workflow_dispatch:
+    inputs:
+      issue:
+        description: Issue or pull request number to comment on
+        required: true
+permissions:
+  issues: write
+  pull-requests: write
+jobs:
+  comment:
+    runs-on: ubuntu-latest
+    steps:
+      - env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: gh issue comment "${{ inputs.issue }}" --repo "${{ github.repository }}" --body "Fixture reply from a non-viewer account."
