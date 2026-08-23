@@ -1,4 +1,4 @@
-name: Create review-request fixture
+name: Create bulk review-request fixtures
 
 on:
   workflow_dispatch:
@@ -8,24 +8,29 @@ permissions:
   pull-requests: write
 
 jobs:
-  create-review-fixture:
+  create-review-fixtures:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
-      - name: Create bot-authored pull request
+      - name: Create bot-authored pull requests
         env:
           GH_TOKEN: ${{ github.token }}
         run: |
           git config user.name "github-actions[bot]"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
-          git checkout -b fixture/review-request
-          printf '%s\n' 'This change exists to exercise the review-requested dashboard panel.' > review-request.md
-          git add review-request.md
-          git commit -m "Add review-request fixture"
-          git push origin fixture/review-request
-          gh pr create \
-            --base main \
-            --head fixture/review-request \
-            --title "Fixture: review requested from bashkev" \
-            --body "Bot-authored fixture for the Needs your review panel." \
-            --reviewer bashkev
+          for index in $(seq 1 24); do
+            branch="fixture/bulk-review-$index"
+            git checkout main
+            git checkout -b "$branch"
+            printf '%s\n' "Bulk review-request fixture $index" > "bulk-review-$index.txt"
+            git add "bulk-review-$index.txt"
+            git commit -m "Add bulk review fixture $index"
+            git push origin "$branch"
+            gh pr create \
+              --base main \
+              --head "$branch" \
+              --title "Fixture review request $(printf '%02d' "$index")" \
+              --body "Bulk bot-authored review-request fixture $index of 24." \
+              --reviewer bashkev
+            sleep 1
+          done
