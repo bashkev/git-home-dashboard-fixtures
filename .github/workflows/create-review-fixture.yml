@@ -1,0 +1,31 @@
+name: Create review-request fixture
+
+on:
+  workflow_dispatch:
+
+permissions:
+  contents: write
+  pull-requests: write
+
+jobs:
+  create-review-fixture:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Create bot-authored pull request
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git checkout -b fixture/review-request
+          printf '%s\n' 'This change exists to exercise the review-requested dashboard panel.' > review-request.md
+          git add review-request.md
+          git commit -m "Add review-request fixture"
+          git push origin fixture/review-request
+          gh pr create \
+            --base main \
+            --head fixture/review-request \
+            --title "Fixture: review requested from bashkev" \
+            --body "Bot-authored fixture for the Needs your review panel." \
+            --reviewer bashkev
